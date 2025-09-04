@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES6",          // 编译目标ES版本（推荐ES6+）
+    "module": "ESNext",       // 模块规范（ESNext兼容现代打包工具）
+    "outDir": "./dist",       // 编译输出目录（生成的JS文件存放于此）
+    "rootDir": "./src",       // TS源文件根目录
+    "declaration": true,      // 生成类型声明文件（.d.ts），对TS用户至关重要
+    "declarationMap": true,   // 生成声明映射文件（方便调试类型）
+    "strict": true,           // 开启严格类型检查（推荐开启）
+    "esModuleInterop": true,  // 兼容ES模块与CommonJS（避免导入问题）
+    "skipLibCheck": true,     // 跳过第三方库类型检查（提升编译速度）
+    "forceConsistentCasingInFileNames": true // 强制文件名大小写一致
+  },
+  "include": ["src/**/*"],    // 需要编译的TS文件路径
+  "exclude": ["node_modules"] // 排除无需编译的目录
+}

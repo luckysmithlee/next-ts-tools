@@ -1,0 +1,24 @@
+{
+  "name": "next-ts-tools",
+  "version": "1.0.0",
+  "description": "A lightweight utility library for TS",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "utility",
+    "TS",
+    "typescript"
+  ],
+  "author": "Lee-smith-hero <smith_lee@foxmail.com> (https://github.com/Lee-smith-hero)",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "vitest": "^1.6.1"
+  }
+}

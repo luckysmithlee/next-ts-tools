@@ -1,0 +1,69 @@
+# ------------------------------
+# 核心依赖与构建产物
+# ------------------------------
+# npm/yarn/pnpm 依赖目录（必忽略）
+node_modules/         
+# TypeScript 编译输出目录（必忽略）
+dist/                  
+# 测试覆盖率报告（如 Vitest/Jest 生成）
+coverage/              
+# 可选：若配置了 ESM 单独输出目录
+dist-esm/              
+# 可选：Babel 等工具生成的兼容目录
+lib/                   
+
+# ------------------------------
+# 环境变量与敏感信息
+# ------------------------------
+# 环境变量文件（含本地配置）
+.env*                  
+# 保留示例文件（可选，根据需求调整）
+!.env.example          
+# 自定义敏感文件后缀
+*.secret               
+
+# ------------------------------
+# 编辑器/IDE 配置
+# ------------------------------
+# VS Code 配置（含 settings.json、extensions.json 等）
+.vscode/               
+# WebStorm/IntelliJ 配置
+.idea/                 
+# Visual Studio 解决方案文件
+*.suo                  
+# Visual Studio 远程调试文件
+*.ntvs*                
+# Visual Studio 项目文件
+*.njsproj              
+# Visual Studio 解决方案文件
+*.sln                  
+
+# ------------------------------
+# 系统与临时文件
+# ------------------------------
+# macOS 系统文件
+.DS_Store              
+# Windows 缩略图缓存
+Thumbs.db              
+# 日志文件（如调试日志）
+*.log                  
+# npm 调试日志
+npm-debug.log*         
+# yarn 调试日志
+yarn-debug.log*        
+# yarn 错误日志
+yarn-error.log*        
+# pnpm 调试日志
+pnpm-debug.log*        
+
+# ------------------------------
+# 开发工具临时文件
+# ------------------------------
+# Vim 交换文件
+*.swp                  
+# Vim 备份文件
+*.swo                  
+# patch 拒绝文件
+*.rej                  
+# patch 原始备份
+*.orig
