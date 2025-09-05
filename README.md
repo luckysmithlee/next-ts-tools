@@ -42,6 +42,26 @@ camelCase('hello_world'); // 返回 'helloWorld'
 camelCase('user-name');   // 返回 'userName'
 ```
 
+#### mask(str: string, prefixLength?: number, suffixLength?: number): string
+
+对字符串进行脱敏处理，保留前后指定数量的字符，中间用星号替代。
+
+```typescript
+import { mask } from 'next-ts-tools';
+
+// 默认保留前3后3
+mask('13812345678');     // 返回 '138****5678'
+
+// 自定义前后保留位数
+mask('张三李四王五', 1, 1); // 返回 '张****五'
+mask('abcdefg', 2, 2);    // 返回 'ab****fg'
+```
+
+**参数说明**：
+- `str`: 需要脱敏的字符串
+- `prefixLength`: 前端保留的字符数量，默认为3
+- `suffixLength`: 后端保留的字符数量，默认为3
+
 ## 开发
 
 ### 安装依赖
