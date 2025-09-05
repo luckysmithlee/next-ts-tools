@@ -1,48 +1,48 @@
-name: Publish to npm
+name: Publish to npm  # 工作流名称（GitHub Actions 页面显示）
 
 on:
   push:
-    branches: [ "main" ]
-    tags: [ "v*" ]
-  workflow_dispatch:
+    branches: [ "main" ]   # 当推送到 main 分支时触发
+    tags: [ "v*" ]         # 当推送 v* 开头的标签时触发，例如 v1.0.0
+  workflow_dispatch:        # 手动触发（GitHub 页面按钮）
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # 使用最新的 Ubuntu 环境
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [20.x]  # 可以同时测试多个 Node.js 版本，这里只用 20.x
 
     steps:
       # ------------------------------
-      # 检出代码
+      # 步骤1：检出代码
       # ------------------------------
       - name: Checkout source code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0   # 拉取完整的提交历史（用于生成 changelog）
 
       # ------------------------------
-      # 安装 Node.js + 配置 npm registry
+      # 步骤2：安装 Node.js 并配置 npm
       # ------------------------------
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          registry-url: 'https://registry.npmjs.org/'
-          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org/'  # 配置 npm registry（必须）
+          cache: 'npm'  # 启用缓存（加快构建）
           cache-dependency-path: package-lock.json
 
       # ------------------------------
-      # 安装依赖
+      # 步骤3：安装依赖
       # ------------------------------
       - name: Install dependencies
-        run: npm ci
+        run: npm ci   # npm ci 更适合 CI/CD，保证 lock 文件一致
         env:
-          CI: true
+          CI: true    # 启用 CI 模式
 
       # ------------------------------
-      # 运行测试
+      # 步骤4：运行单元测试
       # ------------------------------
       - name: Run unit tests
         run: npm test
@@ -50,7 +50,10 @@ jobs:
           CI: true
 
       # ------------------------------
-      # 自动递增版本号（仅在 main 分支）
+      # 步骤5：自动递增版本号（仅在 main 分支）
+      # - feat: → minor 版本（0.1.x → 0.2.0）
+      # - fix: → patch 版本（0.1.0 → 0.1.1）
+      # - 其他提交信息 → patch
       # ------------------------------
       - name: Bump version (auto)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -68,7 +71,9 @@ jobs:
           GIT_COMMITTER_EMAIL: ${{ github.actor }}@users.noreply.github.com
 
       # ------------------------------
-      # 发布到 npm
+      # 步骤6：发布到 npm
+      # - 使用 NODE_AUTH_TOKEN 作为认证（必须）
+      # - secrets.NPM_TOKEN 在仓库 Settings → Secrets 设置
       # ------------------------------
       - name: Publish to npm
         run: npm publish --access public
@@ -76,7 +81,52 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       # ------------------------------
-      # 创建 GitHub Release（仅 Tag 推送时触发）
+      # 步骤7：生成 changelog（基于 commit 信息）
+      # - 收集最近一次 tag 到当前提交之间的 commit
+      # - 将 feat/fix 类型的 commit 分类
+      # ------------------------------
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # 获取最近的 tag
+          last_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          
+          if [ -z "$last_tag" ]; then
+            # 如果没有 tag，则取所有 commit
+            range="HEAD"
+          else
+            # 如果有 tag，则取该 tag 之后的 commit
+            range="$last_tag..HEAD"
+          fi
+
+          echo "生成 Changelog，范围: $range"
+
+          # 分类收集 feat 和 fix
+          feats=$(git log $range --pretty=format:"- %s" | grep "^-\s*feat:" || true)
+          fixes=$(git log $range --pretty=format:"- %s" | grep "^-\s*fix:" || true)
+
+          # 拼接成最终 changelog
+          changelog=""
+          if [ -n "$feats" ]; then
+            changelog="$changelog\n### ✨ Features\n$feats\n"
+          fi
+          if [ -n "$fixes" ]; then
+            changelog="$changelog\n### 🐛 Fixes\n$fixes\n"
+          fi
+
+          if [ -z "$changelog" ]; then
+            changelog="No significant changes."
+          fi
+
+          # 输出 changelog 给后续步骤使用
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$changelog" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      # ------------------------------
+      # 步骤8：创建 GitHub Release（仅推送 tag 时触发）
+      # - release 名称和 tag 一致
+      # - release 内容为自动生成的 changelog
       # ------------------------------
       - name: Create GitHub Release
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
@@ -84,7 +134,6 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           release_name: Release ${{ github.ref_name }}
-          body: |
-            Automatically generated release from commit: ${{ github.sha }}
+          body: ${{ steps.changelog.outputs.changelog }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub 自动注入的 token
