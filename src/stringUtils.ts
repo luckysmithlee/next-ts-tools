@@ -18,3 +18,30 @@ export function capitalize(str: string): string {
 export function camelCase(str: string): string {
   return str.replace(/[-_](\w)/g, (_, c) => c ? c.toUpperCase() : '');
 }
+
+/**
+ * 对字符串进行脱敏处理，保留前后指定数量的字符，中间用星号替代
+ * @param str 需要脱敏的字符串
+ * @param prefixLength 前端保留的字符数量，默认为3
+ * @param suffixLength 后端保留的字符数量，默认为3
+ * @returns 脱敏后的字符串
+ * @example mask('13812345678') → '138****5678'
+ * @example mask('张三李四', 1, 1) → '张**四'
+ */
+export function mask(str: string, prefixLength: number = 3, suffixLength: number = 3): string {
+  if (!str) return str;
+  
+  const length = str.length;
+  
+  // 如果字符串长度小于等于前后保留的长度之和，则不进行脱敏
+  if (length <= prefixLength + suffixLength) {
+    return str;
+  }
+  
+  const prefix = str.substring(0, prefixLength);
+  const suffix = str.substring(length - suffixLength);
+  const maskLength = length - prefixLength - suffixLength;
+  const maskStr = '*'.repeat(maskLength);
+  
+  return prefix + maskStr + suffix;
+}
