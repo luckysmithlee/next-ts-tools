@@ -1,95 +1,90 @@
-name: Publish to npm  # 工作流名称（GitHub 页面显示）
+name: Publish to npm
 
-# 触发条件：当代码推送到 main 分支，或新建以 v 开头的 Tag 时触发
 on:
   push:
-    branches: [ "main" ]  # main 分支推送触发
-    tags: [ "v*" ]        # 可选：Tag 推送触发（如 v0.1.0）
-  # 可选：手动触发（通过 GitHub 页面「Run workflow」按钮）
+    branches: [ "main" ]
+    tags: [ "v*" ]
   workflow_dispatch:
 
-# 工作流运行环境（使用最新 Ubuntu 虚拟机）
 jobs:
   publish:
-    runs-on: ubuntu-latest  # 运行环境（Ubuntu 最新稳定版）
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20.x]  # 支持的 Node.js 版本（可扩展多个，如 18.x, 20.x）
+        node-version: [20.x]
+
     steps:
       # ------------------------------
-      # 步骤1：检出代码到 GitHub 虚拟机
+      # 检出代码
       # ------------------------------
       - name: Checkout source code
-        uses: actions/checkout@v4  # GitHub 官方 Action，用于检出代码
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # 拉取完整提交历史（可选，某些工具需要）
+          fetch-depth: 0
 
       # ------------------------------
-      # 步骤2：安装 Node.js（自动匹配版本）
+      # 安装 Node.js + 配置 npm registry
       # ------------------------------
       - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4  # GitHub 官方 Action，安装 Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}  # 使用矩阵中的 Node.js 版本
-          cache: 'npm'  # 缓存 node_modules 目录（加速后续构建）
-          cache-dependency-path: package-lock.json  # 仅当 package-lock.json 变化时重置缓存
+          node-version: ${{ matrix.node-version }}
+          registry-url: 'https://registry.npmjs.org/'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
 
       # ------------------------------
-      # 步骤3：安装项目依赖（严格按 lock 文件安装）
+      # 安装依赖
       # ------------------------------
       - name: Install dependencies
-        run: npm install  # 比 npm ci 会比 npm install 更严格，确保依赖版本一致，但可能会出现问题https://github.com/npm/cli/issues/4828
+        run: npm ci
         env:
-          CI: true  # 启用 CI 模式（部分工具会优化输出）
+          CI: true
 
       # ------------------------------
-      # 步骤4：运行测试（确保代码质量）
+      # 运行测试
       # ------------------------------
       - name: Run unit tests
-        run: npm test  # 执行 Vitest 测试
+        run: npm test
         env:
-          CI: true  # 测试失败时终止流程（默认行为）
+          CI: true
 
       # ------------------------------
-      # 步骤5：自动递增版本号（可选，根据需求启用）
+      # 自动递增版本号（仅在 main 分支）
       # ------------------------------
-      - name: Bump version (patch)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'  # 仅在推送到 main 时执行
+      - name: Bump version (auto)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-          # 根据提交类型自动递增版本（feat → minor，fix → patch）
           npm version $(node -p "const { execSync } = require('child_process'); \
             const msg = execSync('git log -1 --pretty=%B').toString().trim(); \
             if (msg.includes('feat:')) 'minor'; \
             else if (msg.includes('fix:')) 'patch'; \
             else 'patch';") \
-          --no-git-tag-version  # 不生成 Git Tag（后续手动或自动打 Tag）
+          --no-git-tag-version
         env:
-          GIT_AUTHOR_NAME: ${{ github.actor }}  # 提交者名称（GitHub 用户名）
-          GIT_AUTHOR_EMAIL: ${{ github.actor }}@users.noreply.github.com  # 提交者邮箱
+          GIT_AUTHOR_NAME: ${{ github.actor }}
+          GIT_AUTHOR_EMAIL: ${{ github.actor }}@users.noreply.github.com
           GIT_COMMITTER_NAME: ${{ github.actor }}
           GIT_COMMITTER_EMAIL: ${{ github.actor }}@users.noreply.github.com
 
       # ------------------------------
-      # 步骤6：发布到 npm（仅版本更新时）
+      # 发布到 npm
       # ------------------------------
       - name: Publish to npm
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'  # 仅在推送到 main 时执行
-        run: npm publish --access public  # 发布包（--access public 用于公开作用域包）
+        run: npm publish --access public
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}  # 使用仓库中存储的 npm Token
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       # ------------------------------
-      # 步骤7（可选）：自动创建 GitHub Release
+      # 创建 GitHub Release（仅 Tag 推送时触发）
       # ------------------------------
       - name: Create GitHub Release
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')  # 仅当推送 Tag 时执行
-        uses: actions/create-release@v1  # GitHub 官方 Action，创建 Release
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        uses: actions/create-release@v1
         with:
-          tag_name: ${{ github.ref_name }}  # 使用触发工作流的 Tag（如 v0.1.0）
-          release_name: Release ${{ github.ref_name }}  # Release 名称（与 Tag 一致）
-          body: |  # 自动生成 Changelog（可替换为更复杂的逻辑）
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          body: |
             Automatically generated release from commit: ${{ github.sha }}
-          draft: false  # 是否为草稿（false 表示直接发布）
-          prerelease: false  # 是否为预发布（false 表示正式版）
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub 自动生成的 Token（无需手动配置）
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
