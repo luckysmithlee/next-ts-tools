@@ -38,7 +38,7 @@ jobs:
       # 步骤3：安装项目依赖（严格按 lock 文件安装）
       # ------------------------------
       - name: Install dependencies
-        run: npm ci  # 比 npm install 更严格，确保依赖版本一致
+        run: npm install  # 比 npm ci 会比 npm install 更严格，确保依赖版本一致，但可能会出现问题https://github.com/npm/cli/issues/4828
         env:
           CI: true  # 启用 CI 模式（部分工具会优化输出）
 
