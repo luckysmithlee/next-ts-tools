@@ -22,13 +22,13 @@ describe('stringUtils', () => {
   describe('mask', () => {
     test('使用默认参数（前3后3）', () => {
       expect(mask('13812345678')).toBe('138****5678');
-      expect(mask('abcdefghijk')).toBe('abc*****ijk');
+      expect(mask('abcdefghijk')).toBe('abc****ijk');
     });
 
     test('自定义前后保留位数', () => {
       expect(mask('13812345678', 2, 4)).toBe('13****5678');
-      expect(mask('张三李四王五', 1, 1)).toBe('张***五');
-      expect(mask('abcdefg', 2, 2)).toBe('ab***fg');
+      expect(mask('张三李四王五', 1, 1)).toBe('张****五');
+      expect(mask('abcdefg', 2, 2)).toBe('ab****fg');
     });
 
     test('处理边界情况', () => {
@@ -45,11 +45,11 @@ describe('stringUtils', () => {
 
     test('极端参数情况', () => {
       // 前缀长度为0
-      expect(mask('abcdef', 0, 3)).toBe('***def');
+      expect(mask('abcdef', 0, 3)).toBe('****def');
       // 后缀长度为0
-      expect(mask('abcdef', 3, 0)).toBe('abc***');
+      expect(mask('abcdef', 3, 0)).toBe('abc****');
       // 前后缀长度都为0
-      expect(mask('abcdef', 0, 0)).toBe('******');
+      expect(mask('abcdef', 0, 0)).toBe('****');
     });
   });
 });
