@@ -1,5 +1,16 @@
 import { describe, test, expect } from 'vitest';
-import { capitalize, camelCase, mask, MaskOptions } from '../src';
+import {
+  capitalize,
+  camelCase,
+  mask,
+  MaskOptions,
+  pascalCase,
+  snakeCase,
+  kebabCase,
+  truncate,
+  trim,
+  isEmpty
+} from '../src';
 
 describe('stringUtils', () => {
   test('capitalize: 空字符串抛出错误', () => {
@@ -63,6 +74,91 @@ describe('stringUtils', () => {
       expect(mask('13812345678', { maskCharCount: 8 })).toBe('138********5678');
       // 0个星号（特殊情况）
       expect(mask('13812345678', { maskCharCount: 0 })).toBe('1385678');
+    });
+  });
+
+  describe('pascalCase', () => {
+    test('下划线转帕斯卡命名', () => {
+      expect(pascalCase('hello_world')).toBe('HelloWorld');
+      expect(pascalCase('user_name')).toBe('UserName');
+    });
+
+    test('短横线转帕斯卡命名', () => {
+      expect(pascalCase('hello-world')).toBe('HelloWorld');
+      expect(pascalCase('user-name')).toBe('UserName');
+    });
+
+    test('空字符串处理', () => {
+      expect(pascalCase('')).toBe('');
+    });
+  });
+
+  describe('snakeCase', () => {
+    test('驼峰转下划线命名', () => {
+      expect(snakeCase('helloWorld')).toBe('hello_world');
+      expect(snakeCase('userName')).toBe('user_name');
+      expect(snakeCase('XMLHttpRequest')).toBe('x_m_l_http_request');
+    });
+
+    test('空字符串处理', () => {
+      expect(snakeCase('')).toBe('');
+    });
+  });
+
+  describe('kebabCase', () => {
+    test('驼峰转短横线命名', () => {
+      expect(kebabCase('helloWorld')).toBe('hello-world');
+      expect(kebabCase('userName')).toBe('user-name');
+      expect(kebabCase('XMLHttpRequest')).toBe('-x-m-l-http-request');
+    });
+
+    test('空字符串处理', () => {
+      expect(kebabCase('')).toBe('');
+    });
+  });
+
+  describe('truncate', () => {
+    test('正常截断', () => {
+      expect(truncate('Hello World', 8)).toBe('Hello...');
+      expect(truncate('Hello World', 5)).toBe('He...');
+    });
+
+    test('不需要截断', () => {
+      expect(truncate('Hello', 8)).toBe('Hello');
+      expect(truncate('Hello', 5)).toBe('Hello');
+    });
+
+    test('自定义后缀', () => {
+      expect(truncate('Hello World', 8, '---')).toBe('Hello---');
+    });
+
+    test('边界情况', () => {
+      expect(truncate('', 5)).toBe('');
+      expect(truncate('Hello', 0)).toBe('...');
+    });
+  });
+
+  describe('trim', () => {
+    test('去除前后空白', () => {
+      expect(trim('  hello  ')).toBe('hello');
+      expect(trim('\t\nworld\t\n')).toBe('world');
+    });
+
+    test('空字符串处理', () => {
+      expect(trim('')).toBe('');
+    });
+  });
+
+  describe('isEmpty', () => {
+    test('空字符串', () => {
+      expect(isEmpty('')).toBe(true);
+      expect(isEmpty('   ')).toBe(true);
+      expect(isEmpty('\t\n')).toBe(true);
+    });
+
+    test('非空字符串', () => {
+      expect(isEmpty('hello')).toBe(false);
+      expect(isEmpty('  hello  ')).toBe(false);
     });
   });
 });

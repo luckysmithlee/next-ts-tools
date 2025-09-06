@@ -16,7 +16,8 @@ export function capitalize(str: string): string {
  * @returns 驼峰命名的字符串
  */
 export function camelCase(str: string): string {
-  return str.replace(/[-_](\w)/g, (_, c) => c ? c.toUpperCase() : '');
+  if (!str) return str;
+  return str.replace(/[-_]+(\w)/g, (_, c) => c ? c.toUpperCase() : '');
 }
 
 /**
@@ -42,7 +43,12 @@ export interface MaskOptions {
  */
 export function mask(str: string, options: MaskOptions = {}): string {
   const { prefixLength = 3, suffixLength = 4, maskCharCount = 4 } = options;
+
+  // 输入验证
   if (!str) return str;
+  if (prefixLength < 0 || suffixLength < 0 || maskCharCount < 0) {
+    throw new Error('Length parameters must be non-negative');
+  }
 
   const length = str.length;
 
@@ -51,7 +57,6 @@ export function mask(str: string, options: MaskOptions = {}): string {
     return str;
   }
 
-
   const prefix = str.substring(0, prefixLength);
   const suffix = str.substring(length - suffixLength);
 
@@ -59,4 +64,71 @@ export function mask(str: string, options: MaskOptions = {}): string {
   const maskStr = '*'.repeat(maskCharCount);
 
   return prefix + maskStr + suffix;
+}
+
+/**
+ * 将字符串转换为帕斯卡命名（首字母大写的驼峰命名）
+ * @example 'hello_world' → 'HelloWorld'; 'user-name' → 'UserName'
+ * @param str 输入字符串
+ * @returns 帕斯卡命名的字符串
+ */
+export function pascalCase(str: string): string {
+  if (!str) return str;
+  const camel = camelCase(str);
+  return capitalize(camel);
+}
+
+/**
+ * 将驼峰命名转换为下划线命名
+ * @example 'helloWorld' → 'hello_world'; 'userName' → 'user_name'
+ * @param str 输入字符串
+ * @returns 下划线命名的字符串
+ */
+export function snakeCase(str: string): string {
+  if (!str) return str;
+  return str.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '');
+}
+
+/**
+ * 将驼峰命名转换为短横线命名
+ * @example 'helloWorld' → 'hello-world'; 'userName' → 'user-name'
+ * @param str 输入字符串
+ * @returns 短横线命名的字符串
+ */
+export function kebabCase(str: string): string {
+  if (!str) return str;
+  return str.replace(/([A-Z])/g, '-$1').toLowerCase();
+}
+
+/**
+ * 截断字符串并添加省略号
+ * @param str 输入字符串
+ * @param maxLength 最大长度
+ * @param suffix 后缀，默认为 '...'
+ * @returns 截断后的字符串
+ * @example truncate('Hello World', 8) → 'Hello...'
+ */
+export function truncate(str: string, maxLength: number, suffix: string = '...'): string {
+  if (!str || str.length <= maxLength) return str;
+  if (maxLength <= suffix.length) return suffix;
+  return str.substring(0, maxLength - suffix.length) + suffix;
+}
+
+/**
+ * 移除字符串两端的空白字符
+ * @param str 输入字符串
+ * @returns 去除空白后的字符串
+ */
+export function trim(str: string): string {
+  if (!str) return str;
+  return str.trim();
+}
+
+/**
+ * 检查字符串是否为空或只包含空白字符
+ * @param str 输入字符串
+ * @returns 是否为空
+ */
+export function isEmpty(str: string): boolean {
+  return !str || str.trim().length === 0;
 }
