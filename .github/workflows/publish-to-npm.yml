@@ -64,13 +64,17 @@ jobs:
           # 获取当前版本
           current_version=$(node -p "require('./package.json').version")
           echo "Current version: $current_version"
-
-          # 检查是否已发布到 npm
-          if npm view next-ts-tools@$current_version version > /dev/null 2>&1; then
+          
+          # 获取 npm 上最新版本
+          npm_version=$(npm view next-ts-tools version 2>/dev/null || echo "0.0.0")
+          echo "Latest npm version: $npm_version"
+          
+          # 比较版本号
+          if [ "$current_version" = "$npm_version" ]; then
             echo "Version $current_version already published, skipping..."
             echo "should_publish=false" >> $GITHUB_OUTPUT
           else
-            echo "Version $current_version not published, will publish..."
+            echo "Version $current_version is newer than $npm_version, will publish..."
             echo "should_publish=true" >> $GITHUB_OUTPUT
           fi
 
