@@ -66,7 +66,7 @@ jobs:
           # 获取最新提交信息
           commit_message=$(git log -1 --pretty=%B)
           echo "Latest commit: $commit_message"
-          
+
           # 确定版本更新类型
           if echo "$commit_message" | grep -q "BREAKING CHANGE"; then
             version_type="major"
@@ -81,7 +81,7 @@ jobs:
             version_type="patch"
             echo "Default to patch version"
           fi
-          
+
           # 更新版本号
           npm version $version_type --no-git-tag-version
           new_version=$(node -p "require('./package.json').version")
@@ -99,7 +99,7 @@ jobs:
         run: |
           new_version="${{ steps.version-bump.outputs.new_version }}"
           echo "Checking if version $new_version needs publishing"
-          
+
           # 检查是否已发布到 npm
           if npm view next-ts-tools@$new_version version > /dev/null 2>&1; then
             echo "Version $new_version already published, skipping..."
@@ -110,17 +110,17 @@ jobs:
           fi
 
       # ------------------------------
-      # 步骤7：提交版本更新
-      # - 将版本更新提交回仓库
+      # 步骤7：记录版本信息（main 分支受保护）
+      # - 由于 main 分支受保护，无法直接推送版本更新
+      # - 记录版本信息用于发布
       # ------------------------------
-      - name: Commit version bump
+      - name: Log version info
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add package.json package-lock.json
-          git commit -m "chore: bump version to ${{ steps.version-bump.outputs.new_version }}"
-          git push origin main
+          echo "Version bumped to: ${{ steps.version-bump.outputs.new_version }}"
+          echo "Version type: ${{ steps.version-bump.outputs.version_type }}"
+          echo "Note: Version update not committed due to protected main branch"
+          echo "Please manually update package.json version if needed"
 
       # ------------------------------
       # 步骤8：发布到 npm
