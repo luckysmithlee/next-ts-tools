@@ -42,25 +42,38 @@ camelCase('hello_world'); // 返回 'helloWorld'
 camelCase('user-name');   // 返回 'userName'
 ```
 
-#### mask(str: string, prefixLength?: number, suffixLength?: number): string
+#### mask(str: string, options?: MaskOptions): string
 
 对字符串进行脱敏处理，保留前后指定数量的字符，中间用星号替代。
 
 ```typescript
-import { mask } from 'next-ts-tools';
+import { mask, MaskOptions } from 'next-ts-tools';
 
-// 默认保留前3后3
+// 使用默认配置（前3后4，4个星号）
 mask('13812345678');     // 返回 '138****5678'
 
 // 自定义前后保留位数
-mask('张三李四王五', 1, 1); // 返回 '张****五'
-mask('abcdefg', 2, 2);    // 返回 'ab****fg'
+mask('张三李四王五', { prefixLength: 1, suffixLength: 1 }); // 返回 '张****五'
+mask('abcdefg', { prefixLength: 2, suffixLength: 2 });    // 返回 'ab****fg'
+
+// 只自定义星号数量
+mask('13812345678', { maskCharCount: 6 }); // 返回 '138******5678'
+mask('13812345678', { maskCharCount: 2 }); // 返回 '138**5678'
+
+// 完全自定义配置
+mask('13812345678', {
+  prefixLength: 2,
+  suffixLength: 3,
+  maskCharCount: 5
+}); // 返回 '13*****678'
 ```
 
 **参数说明**：
 - `str`: 需要脱敏的字符串
-- `prefixLength`: 前端保留的字符数量，默认为3
-- `suffixLength`: 后端保留的字符数量，默认为3
+- `options`: 脱敏配置选项（可选）
+  - `prefixLength`: 前端保留的字符数量，默认为3
+  - `suffixLength`: 后端保留的字符数量，默认为4
+  - `maskCharCount`: 星号的数量，默认为4
 
 ## 开发
 

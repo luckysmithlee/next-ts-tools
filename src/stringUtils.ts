@@ -20,15 +20,28 @@ export function camelCase(str: string): string {
 }
 
 /**
+ * 脱敏配置选项
+ */
+export interface MaskOptions {
+  /** 前端保留的字符数量，默认为3 */
+  prefixLength?: number;
+  /** 后端保留的字符数量，默认为4 */
+  suffixLength?: number;
+  /** 星号的数量，默认为4 */
+  maskCharCount?: number;
+}
+
+/**
  * 对字符串进行脱敏处理，保留前后指定数量的字符，中间用星号替代
  * @param str 需要脱敏的字符串
- * @param prefixLength 前端保留的字符数量，默认为3
- * @param suffixLength 后端保留的字符数量，默认为4
+ * @param options 脱敏配置选项
  * @returns 脱敏后的字符串
  * @example mask('13812345678') → '138****5678'
- * @example mask('张三李四', 1, 1) → '张****四'
+ * @example mask('张三李四', { prefixLength: 1, suffixLength: 1 }) → '张****四'
+ * @example mask('13812345678', { maskCharCount: 6 }) → '138******5678'
  */
-export function mask(str: string, prefixLength: number = 3, suffixLength: number = 4): string {
+export function mask(str: string, options: MaskOptions = {}): string {
+  const { prefixLength = 3, suffixLength = 4, maskCharCount = 4 } = options;
   if (!str) return str;
 
   const length = str.length;
@@ -42,8 +55,8 @@ export function mask(str: string, prefixLength: number = 3, suffixLength: number
   const prefix = str.substring(0, prefixLength);
   const suffix = str.substring(length - suffixLength);
 
-  // 固定使用4个星号，与测试用例保持一致
-  const maskStr = '****';
+  // 根据参数生成指定数量的星号
+  const maskStr = '*'.repeat(maskCharCount);
 
   return prefix + maskStr + suffix;
 }
