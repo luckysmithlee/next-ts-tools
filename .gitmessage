@@ -1,0 +1,24 @@
+# <type>(<scope>): <subject>
+#
+# <body>
+#
+# <footer>
+
+# 类型说明:
+# feat:     新功能
+# fix:      修复
+# docs:     文档
+# style:    格式（不影响代码运行的变动）
+# refactor: 重构
+# perf:     性能优化
+# test:     测试
+# chore:    构建过程或辅助工具的变动
+# ci:       CI 配置
+# build:    构建系统
+# revert:   回滚
+#
+# 示例:
+# feat: 添加用户登录功能
+# fix: 修复登录页面样式问题
+# docs: 更新 API 文档
+# chore: 更新依赖版本
