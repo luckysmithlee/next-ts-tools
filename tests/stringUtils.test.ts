@@ -20,9 +20,9 @@ describe('stringUtils', () => {
   });
 
   describe('mask', () => {
-    test('使用默认参数（前3后3）', () => {
+    test('使用默认参数（前3后4）', () => {
       expect(mask('13812345678')).toBe('138****5678');
-      expect(mask('abcdefghijk')).toBe('abc****ijk');
+      expect(mask('abcdefghijk')).toBe('abc****hijk');
     });
 
     test('自定义前后保留位数', () => {
@@ -38,7 +38,7 @@ describe('stringUtils', () => {
       expect(mask(null as any)).toBe(null);
       expect(mask(undefined as any)).toBe(undefined);
       // 字符串长度小于等于前后保留长度之和时返回原值
-      expect(mask('abc')).toBe('abc'); // 长度为3，前3后3，不脱敏
+      expect(mask('abc')).toBe('abc'); // 长度为3，前3后4，不脱敏
       expect(mask('abcdef', 3, 3)).toBe('abcdef'); // 长度为6，前3后3，不脱敏
       expect(mask('abcde', 3, 3)).toBe('abcde'); // 长度为5，前3后3，不脱敏
     });
